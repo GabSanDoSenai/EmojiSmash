@@ -10,6 +10,7 @@ export default function EmojiSticker({ imageSize, stickerSource }) {
   const translateX = useSharedValue(0);
   const translateY = useSharedValue(0);
   const scaleImage = useSharedValue(imageSize);
+  const isEnlarged = useSharedValue(false); // Estado para controlar se está ampliado
 
   const drag = Gesture.Pan().onChange((event) => {
     translateX.value += event.changeX;
@@ -19,10 +20,15 @@ export default function EmojiSticker({ imageSize, stickerSource }) {
   const doubleTap = Gesture.Tap()
     .numberOfTaps(2)
     .onStart(() => {
-      if (scaleImage.value !== imageSize * 2) {
-        scaleImage.value = scaleImage.value * 2;
-      } else {
+      // Toggle entre tamanho original e ampliado
+      if (isEnlarged.value) {
+        // Se está ampliado, volta ao tamanho original
         scaleImage.value = imageSize;
+        isEnlarged.value = false;
+      } else {
+        // Se está no tamanho original, amplia
+        scaleImage.value = imageSize * 2;
+        isEnlarged.value = true;
       }
     });
 

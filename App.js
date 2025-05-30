@@ -17,7 +17,6 @@ import EmojiSticker from "./components/EmojiSticker";
 
 const PlaceholderImage = require("./assets/images/background-image.png");
 
-
 export default function App() {
   console.log("App component loaded");
   
@@ -68,6 +67,7 @@ export default function App() {
         const localUri = await captureRef(imageRef, {
           height: 440,
           quality: 1,
+          format: 'png', // Usar PNG para mobile também
         });
         await MediaLibrary.saveToLibraryAsync(localUri);
         if (localUri) {
@@ -78,14 +78,16 @@ export default function App() {
       }
     } else {
       try {
-        const dataUrl = await domtoimage.toJpeg(imageRef.current, {
+        // Usar toPng ao invés de toJpeg para ter fundo transparente
+        const dataUrl = await domtoimage.toPng(imageRef.current, {
           quality: 0.95,
           width: 320,
           height: 440,
+          bgcolor: 'transparent', // Fundo transparente
         });
 
         let link = document.createElement("a");
-        link.download = "sticker-smash.jpeg";
+        link.download = "sticker-smash.png"; // Extensão PNG
         link.href = dataUrl;
         link.click();
       } catch (erro) {
