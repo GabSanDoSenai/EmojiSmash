@@ -2,18 +2,17 @@ import { StatusBar } from "expo-status-bar";
 import { StyleSheet, View, Platform } from "react-native";
 import * as ImagePicker from "expo-image-picker";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
-import Animated from "react-native-reanimated";
 import * as MediaLibrary from "expo-media-library";
 import { captureRef } from "react-native-view-shot";
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import domtoimage from "dom-to-image";
 
 import EmojiPicker from "./components/EmojiPicker";
-import Button from "./components/button";
+import Button from "./components/Button";
 import ImageViewer from "./components/ImageViewer";
-import CircleButton from "./components/Circlebutton";
+import CircleButton from "./components/CircleButton";
 import IconButton from "./components/IconButton";
-import EmojiList from "./components/Emojilist";
+import EmojiList from "./components/EmojiList";
 import EmojiSticker from "./components/EmojiSticker";
 
 const PlaceholderImage = require("./assets/images/background-image.png");
@@ -21,6 +20,16 @@ const PlaceholderImage = require("./assets/images/background-image.png");
 export default function App() {
   const [selectedImage, setSelectedImage] = useState(null);
   const [showAppOptions, setShowAppOptions] = useState(false);
+  const [isModalVisible, setIsModalVisible] = useState(false);
+  const [pickedEmoji, setPickedEmoji] = useState(null);
+  const [status, requestPermission] = MediaLibrary.usePermissions();
+  const imageRef = useRef();
+
+  useEffect(() => {
+    if (status === null) {
+      requestPermission();
+    }
+  }, [status]);
 
   const pickImageAsync = async () => {
     let result = await ImagePicker.launchImageLibraryAsync({
@@ -39,25 +48,17 @@ export default function App() {
   const onReset = () => {
     setSelectedImage(null);
     setShowAppOptions(false);
+    setPickedEmoji(null);
   };
-
-  const [isModalVisible, setIsModalVisible] = useState(false);
 
   const onAddSticker = () => {
     setIsModalVisible(true);
   };
+
   const onModalClose = () => {
     setIsModalVisible(false);
   };
-  const [pickedEmoji, setPickedEmoji] = useState(null);
-  const [status, requestPermission] = MediaLibrary.usePermissions();
 
-  useEffect(() => {
-    if (status === null) {
-      requestPermission();
-    }
-  }, [status]);
-  const imageRef = useRef();
   const onSaveImageAsync = async () => {
     if (Platform.OS !== "web") {
       try {
@@ -103,15 +104,6 @@ export default function App() {
           )}
         </View>
       </View>
-      <View style={styles.imageContainer}>
-        <ImageViewer
-          placeholderImageSource={PlaceholderImage}
-          selectedImage={selectedImage}
-        />
-        {pickedEmoji && (
-          <EmojiSticker imageSize={40} stickerSource={pickedEmoji} />
-        )}
-      </View>
 
       {showAppOptions ? (
         <View style={styles.optionsContainer}>
@@ -138,9 +130,11 @@ export default function App() {
           />
         </View>
       )}
+      
       <EmojiPicker isVisible={isModalVisible} onClose={onModalClose}>
         <EmojiList onSelect={setPickedEmoji} onCloseModal={onModalClose} />
       </EmojiPicker>
+      
       <StatusBar style="light" />
     </GestureHandlerRootView>
   );
